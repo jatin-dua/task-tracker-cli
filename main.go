@@ -143,13 +143,35 @@ func updateTaskStatus(filename string, taskId int, newStatus string) error {
 	return nil
 }
 
+func updateTask(filename string, taskId int, newDescription string) error {
+	var updatedTasks []Task
+	tasks, err := readJSONFile(filename)
+	if err != nil {
+		return err
+	}
+
+	for _, task := range tasks {
+		if task.Id == taskId {
+			task.Description = newDescription
+		}
+		updatedTasks = append(updatedTasks, task)
+	}
+	if err := writeJSONFile(filename, updatedTasks); err != nil {
+		return err
+	}
+	return nil
+}
 func main() {
+	filename := "db/tasks.json"
+
 	taskPtr := flag.String("add", "", "Task description")
 	deleteIdPtr := flag.Int("delete", 0, "Task Id to delete")
 	markInProgressIdPtr := flag.Int("mark-in-progress", 0, "Task Id to mark-in-progress")
 	markDoneIdPtr := flag.Int("mark-done", 0, "Task Id to mark-done")
 
-	filename := "db/tasks.json"
+	updateCmd := flag.NewFlagSet("update", flag.ExitOnError)
+	updateTaskId := updateCmd.Int("id", 0, "Task Id to update")
+	updatedDesc := updateCmd.String("task", "", "New task description")
 
 	flag.Parse()
 
@@ -177,5 +199,14 @@ func main() {
 			log.Fatal(err)
 		}
 		log.Printf("Task marked-done successfully (ID: %d)", *markDoneIdPtr)
+	}
+
+	switch os.Args[1] {
+
+	case "update":
+		updateCmd.Parse(os.Args[2:])
+		if err := updateTask(filename, *updateTaskId, *updatedDesc); err != nil {
+		log.Fatal(err)
+		}
 	}
 }
