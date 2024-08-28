@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -134,6 +135,7 @@ func updateTaskStatus(filename string, taskId int, newStatus string) error {
 	for _, task := range tasks {
 		if task.Id == taskId {
 			task.Status = newStatus
+			task.UpdatedAt = time.Now()
 		}
 		updatedTasks = append(updatedTasks, task)
 	}
@@ -153,6 +155,7 @@ func updateTask(filename string, taskId int, newDescription string) error {
 	for _, task := range tasks {
 		if task.Id == taskId {
 			task.Description = newDescription
+			task.UpdatedAt = time.Now()
 		}
 		updatedTasks = append(updatedTasks, task)
 	}
@@ -161,6 +164,20 @@ func updateTask(filename string, taskId int, newDescription string) error {
 	}
 	return nil
 }
+
+func listTasks(filename, filter string) error {
+	tasks, err := readJSONFile(filename)
+	if err != nil {
+		return err
+	}
+	for _, task := range tasks {
+		if filter == "" || task.Status == filter {
+			fmt.Printf("%v\n", task)
+		}
+	}
+	return nil
+}
+
 func main() {
 	filename := "db/tasks.json"
 
@@ -172,6 +189,9 @@ func main() {
 	updateCmd := flag.NewFlagSet("update", flag.ExitOnError)
 	updateTaskId := updateCmd.Int("id", 0, "Task Id to update")
 	updatedDesc := updateCmd.String("task", "", "New task description")
+
+	listCmd := flag.NewFlagSet("list", flag.ExitOnError)
+	listFilter := listCmd.String("filter", "", "List tasks using filter")
 
 	flag.Parse()
 
@@ -206,7 +226,12 @@ func main() {
 	case "update":
 		updateCmd.Parse(os.Args[2:])
 		if err := updateTask(filename, *updateTaskId, *updatedDesc); err != nil {
-		log.Fatal(err)
+			log.Fatal(err)
+		}
+	case "list":
+		listCmd.Parse(os.Args[2:])
+		if err := listTasks(filename, *listFilter); err != nil {
+			log.Fatal(err)
 		}
 	}
 }
