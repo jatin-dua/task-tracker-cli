@@ -125,7 +125,7 @@ func deleteTask(filename string, taskId int) error {
 	return nil
 }
 
-func updateTaskStatus(filename string, taskId int, newStatus string) error {
+func updateTask(filename string, taskId int, newDescription, newStatus string) error {
 	var updatedTasks []Task
 	tasks, err := readJSONFile(filename)
 	if err != nil {
@@ -134,7 +134,13 @@ func updateTaskStatus(filename string, taskId int, newStatus string) error {
 
 	for _, task := range tasks {
 		if task.Id == taskId {
-			task.Status = newStatus
+			if newDescription != "" {
+				task.Description = newDescription
+			}
+
+			if newStatus != "" {
+				task.Status = newStatus
+			}
 			task.UpdatedAt = time.Now()
 		}
 		updatedTasks = append(updatedTasks, task)
@@ -142,26 +148,7 @@ func updateTaskStatus(filename string, taskId int, newStatus string) error {
 	if err := writeJSONFile(filename, updatedTasks); err != nil {
 		return err
 	}
-	return nil
-}
-
-func updateTask(filename string, taskId int, newDescription string) error {
-	var updatedTasks []Task
-	tasks, err := readJSONFile(filename)
-	if err != nil {
-		return err
-	}
-
-	for _, task := range tasks {
-		if task.Id == taskId {
-			task.Description = newDescription
-			task.UpdatedAt = time.Now()
-		}
-		updatedTasks = append(updatedTasks, task)
-	}
-	if err := writeJSONFile(filename, updatedTasks); err != nil {
-		return err
-	}
+	log.Printf("Task updated successfully (ID: %d)", taskId)
 	return nil
 }
 
@@ -208,14 +195,14 @@ func main() {
 	}
 
 	if *markInProgressIdPtr != 0 {
-		if err := updateTaskStatus(filename, *markInProgressIdPtr, "in-progress"); err != nil {
+		if err := updateTask(filename, *markInProgressIdPtr, *taskPtr, "in-progress"); err != nil {
 			log.Fatal(err)
 		}
 		log.Printf("Task marked-in-progress successfully (ID: %d)", *markInProgressIdPtr)
 	}
 
 	if *markDoneIdPtr != 0 {
-		if err := updateTaskStatus(filename, *markDoneIdPtr, "done"); err != nil {
+		if err := updateTask(filename, *markDoneIdPtr, *taskPtr, "done"); err != nil {
 			log.Fatal(err)
 		}
 		log.Printf("Task marked-done successfully (ID: %d)", *markDoneIdPtr)
@@ -225,7 +212,7 @@ func main() {
 
 	case "update":
 		updateCmd.Parse(os.Args[2:])
-		if err := updateTask(filename, *updateTaskId, *updatedDesc); err != nil {
+		if err := updateTask(filename, *updateTaskId, *updatedDesc, ""); err != nil {
 			log.Fatal(err)
 		}
 	case "list":
