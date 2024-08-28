@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"time"
 )
 
 /*
@@ -13,6 +14,14 @@ import (
   -  List all tasks that are not done
   -  List all tasks that are in progress
 */
+
+type Task struct {
+	Id		int
+	Description	string
+	Status		string
+	CreatedAt	time.Time
+	UpdatedAt	time.Time
+}
 
 func main() {
 	argv := os.Args
