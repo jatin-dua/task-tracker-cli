@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"log"
 	"os"
 	"strconv"
@@ -19,11 +20,11 @@ import (
 */
 
 type Task struct {
-	Id		int
-	Description	string
-	Status		string
-	CreatedAt	time.Time
-	UpdatedAt	time.Time
+	Id		int `json:"id"`
+	Description	string `json:"desc"`
+	Status		string `json:"status"`
+	CreatedAt	time.Time `json:"created_at"`
+	UpdatedAt	time.Time `json:"updated_at"`
 }
 
 func generateId() int {
@@ -44,7 +45,7 @@ func generateId() int {
 	return id
 }
 
-func addTask(desc, filename string) int {
+func addTask(filename, desc string) int {
 	id := generateId()
 	curTime := time.Now()
 	task := Task{
@@ -104,27 +105,27 @@ func writeJSONFile(filename string, tasks []Task) error {
 	return nil
 }
 
-func main() {
-	argv := os.Args
-	if len(argv) != 3 {
-		log.Fatal("usage: todo <command>")
-	}
+func deleteTask(filename string, taskId int) error {
+	return nil
+}
 
-	command := argv[1]
-	// option := argv[2]
+func main() {
+	taskPtr := flag.String("add", "", "Task description")
+	deleteIdPtr := flag.Int("delete", 0, "Task Id to delete")
+
 	filename := "db/tasks.json"
 
-	switch command {
-	case "add":
-		task := argv[2]
-		taskId := addTask(task, filename)
+	flag.Parse()
+
+	if *taskPtr != "" {
+		taskId := addTask(filename, *taskPtr)
 		log.Printf("Task added successfully (ID: %d)", taskId)
-	case "update":
-	case "delete":
-	case "mark-in-progress":
-	case "mark-done":
-	case "list":
-	default:
-		log.Fatal("invalid command")
+	}
+
+	if *deleteIdPtr != 0 {
+		if err := deleteTask(filename, *deleteIdPtr); err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("Task deleted successfully (ID: %d)", *deleteIdPtr)
 	}
 }
