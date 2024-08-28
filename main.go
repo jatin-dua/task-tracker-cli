@@ -159,7 +159,7 @@ func listTasks(filename, filter string) error {
 	}
 	for _, task := range tasks {
 		if filter == "" || task.Status == filter {
-			fmt.Printf("%v\n", task)
+			fmt.Printf("[%d] %s --- %s\n", task.Id, task.Description, task.Status)
 		}
 	}
 	return nil
