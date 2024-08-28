@@ -106,10 +106,6 @@ func writeJSONFile(filename string, tasks []Task) error {
 }
 
 func deleteTask(filename string, taskId int) error {
-	return nil
-}
-
-func markTaskInProgress(filename string, taskId int) error {
 	var updatedTasks []Task
 	tasks, err := readJSONFile(filename)
 	if err != nil {
@@ -118,7 +114,7 @@ func markTaskInProgress(filename string, taskId int) error {
 
 	for _, task := range tasks {
 		if task.Id == taskId {
-			task.Status = "in-progress"
+			continue
 		}
 		updatedTasks = append(updatedTasks, task)
 	}
@@ -128,7 +124,7 @@ func markTaskInProgress(filename string, taskId int) error {
 	return nil
 }
 
-func markTaskDone(filename string, taskId int) error {
+func updateTaskStatus(filename string, taskId int, newStatus string) error {
 	var updatedTasks []Task
 	tasks, err := readJSONFile(filename)
 	if err != nil {
@@ -137,7 +133,7 @@ func markTaskDone(filename string, taskId int) error {
 
 	for _, task := range tasks {
 		if task.Id == taskId {
-			task.Status = "done"
+			task.Status = newStatus
 		}
 		updatedTasks = append(updatedTasks, task)
 	}
@@ -170,14 +166,14 @@ func main() {
 	}
 
 	if *markInProgressIdPtr != 0 {
-		if err := markTaskInProgress(filename, *markInProgressIdPtr); err != nil {
+		if err := updateTaskStatus(filename, *markInProgressIdPtr, "in-progress"); err != nil {
 			log.Fatal(err)
 		}
 		log.Printf("Task marked-in-progress successfully (ID: %d)", *markInProgressIdPtr)
 	}
 
 	if *markDoneIdPtr != 0 {
-		if err := markTaskDone(filename, *markDoneIdPtr); err != nil {
+		if err := updateTaskStatus(filename, *markDoneIdPtr, "done"); err != nil {
 			log.Fatal(err)
 		}
 		log.Printf("Task marked-done successfully (ID: %d)", *markDoneIdPtr)
